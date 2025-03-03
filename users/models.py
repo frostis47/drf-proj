@@ -1,45 +1,20 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-    username = None
+    username = None # Убираем username
+    email = models.EmailField(unique=True, verbose_name='Email')
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name='Телефон')
+    city = models.CharField(max_length=100, blank=True, null=True, verbose_name='Город')
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='Аватарка')
 
-    email = models.EmailField(
-        unique=True,
-        verbose_name="Почта",
-        help_text="Укажите почту "
-    )
-
-    phone = models.CharField(
-        max_length=35,
-        blank=True,
-        null=True,
-        verbose_name="Телефон",
-        help_text="Укажите номер телефона "
-    )
-
-    city = models.CharField(
-        max_length=50,
-        verbose_name="Город",
-        blank=True,
-        null=True,
-        help_text="Введите город проживания"
-    )
-
-    avatar = models.ImageField(
-        upload_to='users/avatars',
-        blank=True,
-        null=True,
-        verbose_name='Аватар',
-        help_text='Загрузите фотографию'
-    )
-
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-    USERNAME_FIELD = "email"
 
+    def __str__(self):
+        return self.email
 
-class Meta:
-    verbose_name = 'пользователь'
-    verbose_name_plural = "Пользователи"
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 

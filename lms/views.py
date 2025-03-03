@@ -1,12 +1,31 @@
+from rest_framework import generics
+from lms.models import Lesson
+from lms.serializers import LessonSerializer
+
+
 from rest_framework import viewsets
-from .models import Course, Lesson
-from .serializers import CourseSerializer, LessonSerializer
+from lms.models import Course
+from lms.serializers import CourseSerializer
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-
-class LessonViewSet(viewsets.GenericViewSet):
+class LessonListAPIView(generics.ListAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
 
+class LessonRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+
+class LessonCreateAPIView(generics.CreateAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+
+class LessonUpdateAPIView(generics.UpdateAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+
+class LessonDestroyAPIView(generics.DestroyAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
