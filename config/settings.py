@@ -9,9 +9,6 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-
-
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 
@@ -33,6 +30,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'lms',
     'users',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -124,6 +122,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-    ]
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
