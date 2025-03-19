@@ -14,3 +14,16 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'first_name', 'last_name', 'phone', 'city', 'avatar', 'payment_history']
+        read_only_fields = ['email', 'payment_history', 'first_name', 'last_name', 'phone', 'city', 'avatar'] #только для чтения
+
+
+class UserPublicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name', 'phone', 'city', 'avatar']
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'phone', 'city', 'avatar']

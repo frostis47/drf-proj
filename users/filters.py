@@ -8,5 +8,5 @@ class PaymentFilter(django_filters.FilterSet):
             'paid_course': ['exact'],
             'paid_lesson': ['exact'],
             'payment_method': ['exact'],
-            'payment_date': ['gt', 'lt', 'gte', 'lte', 'exact'],
+            'payment_date': ['gt', 'lt', 'gte', 'lte', 'exact'],  
         }
