@@ -42,7 +42,7 @@ class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
         ('cash', 'Наличные'),
         ('transfer', 'Банковский перевод'),
-        ('stripe', 'Stripe'),  # Добавим Stripe
+        ('stripe', 'Stripe'),
     ]
 
     PAYMENT_STATUS_CHOICES = [

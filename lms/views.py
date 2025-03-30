@@ -50,18 +50,15 @@ class CreatePaymentView(generics.CreateAPIView):
             amount = course.price
             payment_method = request.data.get('payment_method', 'stripe')
 
-            # Создание или получение Stripe Product ID
             if not course.stripe_product_id:
                 course.stripe_product_id = create_stripe_product(name=course.title)
                 course.save()
 
-            # Создание или получение Stripe Price ID
             if not course.stripe_price_id or course.price != course.stripe_price:
                 course.stripe_price_id = create_stripe_price(product_id=course.stripe_product_id, amount=amount)
                 course.stripe_price = amount
                 course.save()
 
-            # Создание Stripe Session
             success_url = settings.DOMAIN + '/success?session_id={CHECKOUT_SESSION_ID}'
             cancel_url = settings.DOMAIN + '/cancel'
             stripe_session_id, stripe_url = create_stripe_session(
@@ -70,7 +67,6 @@ class CreatePaymentView(generics.CreateAPIView):
                 cancel_url=cancel_url
             )
 
-            # Создание объекта Payment в нашей системе
             Payment.objects.create(
                 user=request.user,
                 payment_date=timezone.now(),

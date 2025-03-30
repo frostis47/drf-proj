@@ -7,7 +7,6 @@ from .views import (CourseViewSet, LessonListAPIView, LessonRetrieveAPIView, Les
 router = routers.DefaultRouter()
 router.register(r'courses', views.CourseViewSet, basename='courses')
 
-app_name = 'lms'  # Add this line
 
 urlpatterns = [
     path('', include(router.urls)),
