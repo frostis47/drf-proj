@@ -1,16 +1,25 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Payment, Subscription
+from django.contrib.auth import get_user_model
+from .models import Payment, Subscription
 
+User = get_user_model()
+
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('phone', 'city', 'avatar')}),
+    list_display = ('email', 'first_name', 'last_name', 'is_staff')
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'phone', 'city', 'avatar')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (None, {'fields': ('phone', 'city', 'avatar')}),
+    add_fieldsets = (
+        (None, {
+            'fields': ('email', 'first_name', 'last_name', 'phone', 'city', 'avatar', 'password'),
+        }),
     )
     ordering = ('email',)
 
-admin.site.register(User, CustomUserAdmin)
 admin.site.register(Payment)
 admin.site.register(Subscription)
