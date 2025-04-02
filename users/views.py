@@ -43,3 +43,7 @@ class UserDetailView(generics.RetrieveAPIView):
         return UserPublicSerializer
 
     permission_classes = [IsAuthenticated]
+
+
+
+
