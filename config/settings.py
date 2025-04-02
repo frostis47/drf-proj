@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
 
 load_dotenv()
 
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     'lms',
     'users',
     'django_filters',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -153,3 +155,19 @@ CORS_ALLOW_ALL_ORIGINS = False
 DOMAIN = 'http://127.0.0.1:8000'
 
 STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
+
+
+CELERY_BEAT_SCHEDULE = {
+    'block-inactive-users': {
+        'task': 'users.tasks.block_inactive_users',
+        'schedule': crontab(hour=0, minute=0, day_of_month='1'),  # Запускать каждый месяц 1-го числа в 00:00
+    },
+}
+CELERY_BROKER_URL = f'redis://{os.getenv("REDIS_HOST")}:{os.getenv("REDIS_PORT")}/{os.getenv("REDIS_DB")}'
+CELERY_RESULT_BACKEND = f'redis://{os.getenv("REDIS_HOST")}:{os.getenv("REDIS_PORT")}/{os.getenv("REDIS_DB")}'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

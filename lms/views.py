@@ -7,6 +7,7 @@ from .models import Course, Lesson
 from .serializers import CourseSerializer, LessonSerializer
 from users.models import Payment
 from .services import create_stripe_product, create_stripe_price, create_stripe_session
+from .tasks import send_course_update_email
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -86,3 +87,13 @@ class CreatePaymentView(generics.CreateAPIView):
             return Response({'error': 'Course not found'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CourseUpdateAPIView(generics.UpdateAPIView): # Added
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_update(self, serializer):
+        serializer.save() # Сохраняем изменения
+        course = self.get_object() # Get the course object
+        send_course_update_email.delay(course.id) # Вызов Celery task
