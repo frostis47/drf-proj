@@ -1,3 +1,4 @@
+
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from .models import User, Payment
@@ -6,7 +7,6 @@ from rest_framework import filters as drf_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import PaymentFilter
 from .permissions import IsProfileOwner
-
 
 
 class PaymentListView(generics.ListAPIView):

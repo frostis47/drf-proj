@@ -17,6 +17,7 @@ def send_course_update_email(course_id):
     Returns:
         str: Сообщение об успехе или неудаче отправки email.
     """
+
     try:
         course = Course.objects.get(pk=course_id)  # Получаем объект курса из базы данных по ID
         time_difference = timezone.now() - course.last_update
@@ -26,6 +27,7 @@ def send_course_update_email(course_id):
 
         subscriptions = CourseSubscription.objects.filter(course_id=course_id)
         email_list = [sub.user.email for sub in subscriptions]  # Формируем список email-адресов подписчиков
+
 
         send_mail(
             subject=f'Обновление курса!',  # Тема письма
