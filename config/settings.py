@@ -5,14 +5,15 @@ from pathlib import Path
 from datetime import timedelta
 from celery.schedules import crontab
 
-load_dotenv()  # Загрузка переменных окружения из файла .env
+load_dotenv(override=True)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
+DEBUG = True if os.getenv("DEBUG") == "True" else False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
