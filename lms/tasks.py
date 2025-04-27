@@ -5,7 +5,6 @@ from .models import CourseSubscription, Course
 from django.utils import timezone
 from datetime import timedelta
 
-
 @shared_task
 def send_course_update_email(course_id):
     """
@@ -28,10 +27,9 @@ def send_course_update_email(course_id):
         subscriptions = CourseSubscription.objects.filter(course_id=course_id)
         email_list = [sub.user.email for sub in subscriptions]  # Формируем список email-адресов подписчиков
 
-
         send_mail(
-            subject=f'Обновление курса!',  # Тема письма
-            message=f'Курс с id {course_id} был обновлен. Проверьте новые материалы!',  # Сообщение письма
+            subject={f'Обновление курса!'},  # Тема письма
+            message={f'Курс с id {course_id} был обновлен. Проверьте новые материалы!'},  # Сообщение письма
             from_email=settings.DEFAULT_FROM_EMAIL,  # Email отправителя берется из настроек Django
             recipient_list=email_list,  # Список email-адресатов
             fail_silently=False,
