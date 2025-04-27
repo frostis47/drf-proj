@@ -17,12 +17,12 @@ def send_course_update_email(course_id):
     """
     try:
         course = Course.objects.get(pk=course_id)  # Получаем объект курса из базы данных по ID
-        time_difference = timezone.now() - course.last_update  # Вычисляем разницу между текущим временем и временем последнего обновления курса
+        time_difference = timezone.now() - course.last_update
 
         if time_difference < timedelta(hours=4):  # Проверяем, прошло ли больше 4 часов с момента последнего обновления
-            return f"Skipped sending update email for course {course_id}: Updated too recently"  # Если прошло меньше 4 часов, возвращаем сообщение об отмене отправки
+            return f"Skipped sending update email for course {course_id}: Updated too recently"
 
-        subscriptions = CourseSubscription.objects.filter(course_id=course_id)  # Получаем всех подписчиков на данный курс
+        subscriptions = CourseSubscription.objects.filter(course_id=course_id)
         email_list = [sub.user.email for sub in subscriptions]  # Формируем список email-адресов подписчиков
 
         send_mail(
@@ -32,10 +32,10 @@ def send_course_update_email(course_id):
             recipient_list=email_list,  # Список email-адресатов
             fail_silently=False,
         )
-        return f"Successfully sent update email to {len(email_list)} subscribers for course {course_id}"  # Возвращаем сообщение об успешной отправке
+        return f"Successfully sent update email to {len(email_list)} subscribers for course {course_id}"
 
     except Course.DoesNotExist:  # Обрабатываем исключение, если курс с указанным ID не найден
         return f"Course with id {course_id} not found"  # Возвращаем сообщение о том, что курс не найден
 
     except Exception as e:  # Обрабатываем все остальные исключения
-        return f"Failed to send update email for course {course_id}: {str(e)}"  # Возвращаем сообщение о неудачной отправке и текст ошибки
+        return f"Failed to send update email for course {course_id}: {str(e)}"

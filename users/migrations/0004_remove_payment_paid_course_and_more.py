@@ -33,12 +33,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='payment',
             name='course',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='lms.course', verbose_name='Оплаченный курс'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    to='lms.course', verbose_name='Оплаченный курс'),
         ),
         migrations.AddField(
             model_name='payment',
             name='lesson',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='lms.lesson', verbose_name='Оплаченный урок'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    to='lms.lesson', verbose_name='Оплаченный урок'),
         ),
         migrations.AlterField(
             model_name='payment',

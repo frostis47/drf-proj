@@ -5,6 +5,8 @@ from users.models import Subscription
 
 
 class LessonSerializer(serializers.ModelSerializer):
+    video_link = serializers.URLField(validators=[validate_youtube_link])
+
     class Meta:
         model = Lesson
         fields = '__all__'
@@ -15,8 +17,6 @@ class LessonSerializer(serializers.ModelSerializer):
                 fields=['title', 'course']
             )
         ]
-
-    video_link = serializers.URLField(validators=[validate_youtube_link])
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -37,10 +37,3 @@ class CourseSerializer(serializers.ModelSerializer):
         if user and user.is_authenticated:
             return Subscription.objects.filter(user=user, course=obj).exists()
         return False
-
-
-
-class CourseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = '__all__'

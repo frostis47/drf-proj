@@ -16,7 +16,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='course',
             name='stripe_price',
-            field=models.DecimalField(decimal_places=2, default=0.0, help_text='Цена в Stripe (для проверки изменений)', max_digits=10, verbose_name='Stripe Price'),
+            field=models.DecimalField(decimal_places=2, default=0.0, help_text='Цена в Stripe (для проверки изменений)',
+                                      max_digits=10, verbose_name='Stripe Price'),
         ),
         migrations.AddField(
             model_name='course',
@@ -31,11 +32,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='course',
             name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='courses', to=settings.AUTH_USER_MODEL, verbose_name='Владелец'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='courses',
+                                    to=settings.AUTH_USER_MODEL, verbose_name='Владелец'),
         ),
         migrations.AlterField(
             model_name='lesson',
             name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lessons', to=settings.AUTH_USER_MODEL, verbose_name='Владелец'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lessons',
+                                    to=settings.AUTH_USER_MODEL, verbose_name='Владелец'),
         ),
     ]

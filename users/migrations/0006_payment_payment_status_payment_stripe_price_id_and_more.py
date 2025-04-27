@@ -13,7 +13,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='payment',
             name='payment_status',
-            field=models.CharField(choices=[('pending', 'Ожидает оплаты'), ('paid', 'Оплачено'), ('failed', 'Ошибка оплаты')], default='pending', max_length=50, verbose_name='Статус платежа'),
+            field=models.CharField(choices=[('pending', 'Ожидает оплаты'), ('paid', 'Оплачено'),
+                                            ('failed', 'Ошибка оплаты')], default='pending', max_length=50,
+                                   verbose_name='Статус платежа'),
         ),
         migrations.AddField(
             model_name='payment',
@@ -33,7 +35,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='payment',
             name='payment_method',
-            field=models.CharField(choices=[('cash', 'Наличные'), ('transfer', 'Банковский перевод'), ('stripe', 'Stripe')], max_length=50, verbose_name='Способ оплаты'),
+            field=models.CharField(choices=[('cash', 'Наличные'), ('transfer', 'Банковский перевод'),
+                                            ('stripe', 'Stripe')], max_length=50, verbose_name='Способ оплаты'),
         ),
         migrations.DeleteModel(
             name='Donation',
