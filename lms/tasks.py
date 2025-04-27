@@ -41,4 +41,3 @@ def send_course_update_email(course_id):
 
     except Exception as e:  # Обрабатываем все остальные исключения
         return f"Failed to send update email for course {course_id}: {str(e)}"
-
