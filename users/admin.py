@@ -3,7 +3,9 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import get_user_model
 from .models import Payment, Subscription
 
+
 User = get_user_model()
+
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -22,4 +24,5 @@ class CustomUserAdmin(UserAdmin):
     ordering = ('email',)
 
 admin.site.register(Payment)
+
 admin.site.register(Subscription)

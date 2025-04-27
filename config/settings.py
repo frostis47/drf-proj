@@ -1,6 +1,5 @@
 import os
 import sys
-
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import timedelta
@@ -18,8 +17,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-
 
 
 INSTALLED_APPS = [
@@ -72,8 +69,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -103,7 +98,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -125,6 +119,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "users.User"
 
+
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -140,6 +136,8 @@ REST_FRAMEWORK = {
 STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
 
 CACHE_ENABLE = True
+
+
 if CACHE_ENABLE:
     CACHES = {
         "default": {
@@ -190,6 +188,7 @@ EMAIL_USE_SSL = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 
 if "test" in sys.argv:
     DATABASES = {

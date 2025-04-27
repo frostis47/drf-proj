@@ -8,6 +8,7 @@ from .filters import PaymentFilter
 from .permissions import IsProfileOwner
 
 
+
 class PaymentListView(generics.ListAPIView):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
@@ -43,7 +44,3 @@ class UserDetailView(generics.RetrieveAPIView):
         return UserPublicSerializer
 
     permission_classes = [IsAuthenticated]
-
-
-
-

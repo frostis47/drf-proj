@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
 
+
+
 @shared_task  # Преобразуем функцию block_inactive_users в Celery task
 def block_inactive_users():
     """
