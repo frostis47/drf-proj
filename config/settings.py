@@ -31,7 +31,6 @@ INSTALLED_APPS = [
     'lms',
     'users',
     'django_filters',
-    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
