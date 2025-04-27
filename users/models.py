@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.conf import settings
 
-
-
 class CustomUserManager(UserManager):
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
@@ -40,7 +38,6 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
 
-
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
         ('cash', 'Наличные'),
@@ -64,7 +61,6 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма оплаты', default=0.00)
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, verbose_name='Способ оплаты')
 
-
     stripe_product_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='Stripe Product ID')
     stripe_price_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='Stripe Price ID')
     stripe_session_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='Stripe Session ID')
@@ -74,7 +70,6 @@ class Payment(models.Model):
         default='pending',
         verbose_name='Статус платежа'
     )
-
 
     def __str__(self):
         return f"Payment by {self.user} on {self.payment_date}"

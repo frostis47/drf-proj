@@ -25,4 +25,5 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(Payment)
 
+
 admin.site.register(Subscription)

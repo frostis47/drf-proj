@@ -4,6 +4,8 @@ from django.conf import settings
 from .models import CourseSubscription, Course
 from django.utils import timezone
 from datetime import timedelta
+
+
 @shared_task
 def send_course_update_email(course_id):
     """
@@ -35,7 +37,7 @@ def send_course_update_email(course_id):
         return f"Successfully sent update email to {len(email_list)} subscribers for course {course_id}"
 
     except Course.DoesNotExist:  # Обрабатываем исключение, если курс с указанным ID не найден
-        return f"Course with id {course_id} not found"  # Возвращаем сообщение о том, что курс не найден
+        return {f"Course with id {course_id} not found"}  # Возвращаем сообщение о том, что курс не найден
 
     except Exception as e:  # Обрабатываем все остальные исключения
-        return f"Failed to send update email for course {course_id}: {str(e)}"
+        return {f"Failed to send update email for course {course_id}: {str(e)}"}

@@ -13,6 +13,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 app.autodiscover_tasks()  # Автоматически обнаруживаем и регистрируем Celery tasks во всех установленных Django apps
 
+
 @app.task(bind=True)  # Регистрируем функцию debug_task как Celery task
 def debug_task(self):
     """
