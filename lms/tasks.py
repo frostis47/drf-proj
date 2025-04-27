@@ -17,7 +17,6 @@ def send_course_update_email(course_id):
     Returns:
         str: Сообщение об успехе или неудаче отправки email.
     """
-
     try:
         course = Course.objects.get(pk=course_id)  # Получаем объект курса из базы данных по ID
         time_difference = timezone.now() - course.last_update
@@ -28,10 +27,9 @@ def send_course_update_email(course_id):
         subscriptions = CourseSubscription.objects.filter(course_id=course_id)
         email_list = [sub.user.email for sub in subscriptions]  # Формируем список email-адресов подписчиков
 
-
         send_mail(
-            subject={f'Обновление курса!'},  # Тема письма
-            message={f'Курс с id {course_id} был обновлен. Проверьте новые материалы!'},  # Сообщение письма
+            subject='Обновление курса!',  # Тема письма
+            message=f'Курс с id {course_id} был обновлен. Проверьте новые материалы!',  # Сообщение письма
             from_email=settings.DEFAULT_FROM_EMAIL,  # Email отправителя берется из настроек Django
             recipient_list=email_list,  # Список email-адресатов
             fail_silently=False,
@@ -39,7 +37,8 @@ def send_course_update_email(course_id):
         return f"Successfully sent update email to {len(email_list)} subscribers for course {course_id}"
 
     except Course.DoesNotExist:  # Обрабатываем исключение, если курс с указанным ID не найден
-        return {f"Course with id {course_id} not found"}  # Возвращаем сообщение о том, что курс не найден
+        return f"Course with id {course_id} not found"  # Возвращаем сообщение о том, что курс не найден
 
     except Exception as e:  # Обрабатываем все остальные исключения
-        return {f"Failed to send update email for course {course_id}: {str(e)}"}
+        return f"Failed to send update email for course {course_id}: {str(e)}"
+
