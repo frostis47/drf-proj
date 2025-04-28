@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12"  # CHANGED TO 3.12
+          python-version: "3.12"
 
       - name: Display Python version (lint)
         run: python --version
@@ -30,6 +30,13 @@ jobs:
       - name: Configure Poetry
         run: |
           poetry config virtualenvs.create false
+          #poetry config cache-dir /tmp/poetry_cache # Explicit cache directory to avoid permission issues (Optional)
+
+      - name: Clear Poetry Cache
+        run: rm -rf $(poetry config cache-dir) || true
+
+      - name: Remove poetry.lock (lint)
+        run: rm -f poetry.lock || true
 
       - name: Install Dependencies (lint)
         run: poetry install --with dev --no-interaction
@@ -54,7 +61,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12" # CHANGED TO 3.12
+          python-version: "3.12"
 
       - name: Display Python version (test)
         run: python --version
@@ -68,6 +75,13 @@ jobs:
       - name: Configure Poetry
         run: |
           poetry config virtualenvs.create false
+          #poetry config cache-dir /tmp/poetry_cache # Explicit cache directory to avoid permission issues (Optional)
+
+      - name: Clear Poetry Cache
+        run: rm -rf $(poetry config cache-dir) || true
+
+      - name: Remove poetry.lock (test)
+        run: rm -f poetry.lock || true
 
       - name: Install Dependencies (test)
         run: poetry install --no-interaction
