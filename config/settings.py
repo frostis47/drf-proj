@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     'lms',
     "django_filters",
     "drf_yasg",
-    "django_celery_beat",
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
