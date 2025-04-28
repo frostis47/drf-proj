@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -9,9 +10,13 @@ from django.contrib.auth.models import Group
 
 class LMSAPITestCase(APITestCase):
     def setUp(self):
-        # Создаем пользователей
-        self.user = User.objects.create_user(email='test@example.com', password='testpassword')
-        self.moderator = User.objects.create_user(email='moderator@example.com', password='moderatorpassword')
+        # Получаем модель пользователя
+        User = get_user_model()
+
+        # Создаем пользователей с username
+        self.user = User.objects.create_user(username='testuser', email='test@example.com', password='testpassword')
+        self.moderator = User.objects.create_user(username='moderator', email='moderator@example.com',
+                                                  password='moderatorpassword')
         moderator_group = Group.objects.create(name='moderators')
         self.moderator.groups.add(moderator_group)
 
