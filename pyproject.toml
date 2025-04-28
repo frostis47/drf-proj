@@ -37,4 +37,4 @@ packages = [{include = "lms"}]
 [tool.poetry.dependencies]
 python = "^3.12"
 django = "^4.2"
-django_celery_beat = "^2.2.0"
+django_celery_beat = "^2.5.0"
