@@ -10,16 +10,16 @@ class LessonTestCase(APITestCase):
 
     def setUp(self):
         self.user = User.objects.create(email="test@example.com")
-        self.course = Course.objects.create(name="moderator", description="Test")
+        self.course = Course.objects.create(title="moderator", description="Test")  # Изменено на title
         self.lesson = Lesson.objects.create(
-            name="Django", course=self.course, owner=self.user
+            title="Django", course=self.course, owner=self.user  # Изменено на title
         )
         self.client.force_authenticate(user=self.user)
 
     def test_create_lesson(self):
         url = reverse("lms:lesson_create")
         data = {
-            "name": "Test",
+            "title": "Test",  # Изменено на title
             "description": "Test",
             "course": self.course.pk,
             "owner": self.user.pk,
@@ -30,11 +30,11 @@ class LessonTestCase(APITestCase):
     def test_create_lesson_with_youtube(self):
         url = reverse("lms:lesson_create")
         data = {
-            "name": "Test",
+            "title": "Test",  # Изменено на title
             "description": "Test",
             "course": self.course.pk,
             "owner": self.user.pk,
-            "video_url": "https://www.youtube.com/",
+            "video_link": "https://www.youtube.com/",  # Изменено на video_link
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -42,11 +42,11 @@ class LessonTestCase(APITestCase):
     def test_create_lesson_invalid_youtube(self):
         url = reverse("lms:lesson_create")
         data = {
-            "name": "Test",
+            "title": "Test",  # Изменено на title
             "description": "Test",
             "course": self.course.pk,
             "owner": self.user.pk,
-            "video_url": "https://www.vk.com/",
+            "video_link": "https://www.vk.com/",  # Изменено на video_link
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -59,14 +59,14 @@ class LessonTestCase(APITestCase):
     def test_lesson_update(self):
         url = reverse("lms:lesson_update", args=(self.lesson.pk,))
         data = {
-            "name": "Test1",
+            "title": "Test1",  # Изменено на title
             "description": "Test1",
             "course": self.course.pk,
             "owner": self.user.pk,
         }
         response = self.client.patch(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get("name"), "Test1")
+        self.assertEqual(response.data.get("title"), "Test1")  # Изменено на title
 
     def test_lesson_delete(self):
         url = reverse("lms:lesson_delete", args=(self.lesson.pk,))
