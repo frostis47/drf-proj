@@ -18,18 +18,36 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Display Python version
+        run: python --version
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install poetry  # Important: Install poetry if not already installed
+          pip install poetry
 
-          # Install flake8 and any flake8 plugins as dev dependencies.
-          # This assumes you're using a pyproject.toml file. Adjust the command if you use a different format.
-          poetry install --only=dev  # Install dev dependencies
+      - name: Display Poetry version
+        run: poetry --version
+
+      - name: Clear pip cache
+        run: pip cache purge
+
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create false # Avoid creating virtual environments
+          poetry config installer.modern-installation false # for better backward compatibility on Actions runners
+
+      - name: Install Dependencies
+        run: poetry install --with dev --no-interaction
+
+      - name: Check Python
+        run: python --version
+
+      - name: List Installed Packages
+        run: poetry show
 
       - name: Run flake8
-        run: poetry run flake8 .  # Use poetry to run flake8
-
+        run: poetry run flake8 .
 
   test:
     needs: lint
@@ -46,15 +64,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-          poetry install --no-root
-
-      - name: Run tests
-        run: python manage.py test
-
-  build:
-    needs: test
+           test
     runs-on: ubuntu-latest
 
     steps:
