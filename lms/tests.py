@@ -6,6 +6,7 @@ from users.models import User, Subscription
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import Group
 
+
 class LMSAPITestCase(APITestCase):
     def setUp(self):
         # Создаем пользователей
@@ -42,11 +43,11 @@ class LMSAPITestCase(APITestCase):
         self.assertEqual(len(response.data['results']), 1)
 
     def test_course_update_by_owner(self):
-         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}')
-         data = {'title': 'Updated Course'}
-         response = self.client.patch(reverse('course-detail', args=[self.course1.pk]), data)
-         self.assertEqual(response.status_code, status.HTTP_200_OK)
-         self.assertEqual(Course.objects.get(pk=self.course1.pk).title, 'Updated Course')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}')
+        data = {'title': 'Updated Course'}
+        response = self.client.patch(reverse('course-detail', args=[self.course1.pk]), data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Course.objects.get(pk=self.course1.pk).title, 'Updated Course')
 
     def test_course_update_by_not_owner(self):
         user2 = User.objects.create_user(email='test2@example.com', password='testpassword')
@@ -73,11 +74,11 @@ class LMSAPITestCase(APITestCase):
         self.assertEqual(len(response.data['results']), 1)
 
     def test_lesson_update_by_owner(self):
-         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}')
-         data = {'title': 'Updated Lesson'}
-         response = self.client.patch(reverse('lesson-detail', args=[self.lesson1.pk]), data)
-         self.assertEqual(response.status_code, status.HTTP_200_OK)
-         self.assertEqual(Lesson.objects.get(pk=self.lesson1.pk).title, 'Updated Lesson')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}')
+        data = {'title': 'Updated Lesson'}
+        response = self.client.patch(reverse('lesson-detail', args=[self.lesson1.pk]), data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Lesson.objects.get(pk=self.lesson1.pk).title, 'Updated Lesson')
 
     def test_lesson_update_by_not_owner(self):
         user2 = User.objects.create_user(email='test2@example.com', password='testpassword')
