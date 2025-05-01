@@ -2,25 +2,19 @@ import os
 from celery import Celery
 from dotenv import load_dotenv
 
-# Загружаем переменные окружения из файла .env
 load_dotenv()
 
-# Устанавливаем настройки Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-# Создаем экземпляр Celery
-app = Celery('config')
-
-# Загружаем конфигурацию Celery из настроек Django
+app = Celery('config')  # Создаем экземпляр Celery application с именем 'config'
 app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()  # Автоматически обнаруживаем и регистрируем Celery tasks во всех установленных Django apps
 
-# Автоматически обнаруживаем задачи
-app.autodiscover_tasks()
 
-@app.task(bind=True)
+@app.task(bind=True)  # Регистрируем функцию debug_task как Celery task
 def debug_task(self):
     """
     Celery task для отладки. Выводит информацию о запросе.
     """
-    print(f'Request: {self.request!r}')
+    print(f'Request: {self.request!r}')  # Выводим информацию о запросе
 
