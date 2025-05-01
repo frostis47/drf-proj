@@ -90,7 +90,7 @@ class LMSAPITestCase(APITestCase):
 
     def test_subscription_create(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_token["access"]}')
-        data = {'course': self.course1.pk} # changed course_id to course
+        data = {'course': self.course1.pk}  # changed course_id to course
         response = self.client.post(reverse('subscriptions'), data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Subscription.objects.count(), 1)
