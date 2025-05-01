@@ -17,4 +17,3 @@ def debug_task(self):
     Celery task для отладки. Выводит информацию о запросе.
     """
     print(f'Request: {self.request!r}')  # Выводим информацию о запросе
-
