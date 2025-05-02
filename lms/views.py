@@ -51,12 +51,10 @@ class CreatePaymentView(generics.CreateAPIView):
             amount = course.price
             payment_method = request.data.get('payment_method', 'stripe')
 
-            # Создание или получение Stripe Product ID
             if not course.stripe_product_id:
                 course.stripe_product_id = create_stripe_product(name=course.title)
                 course.save()
 
-            # Создание или получение Stripe Price ID
             if not course.stripe_price_id or course.price != course.stripe_price:
                 course.stripe_price_id = create_stripe_price(product_id=course.stripe_product_id, amount=amount)
                 course.stripe_price = amount
@@ -88,13 +86,12 @@ class CreatePaymentView(generics.CreateAPIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-class CourseUpdateAPIView(generics.UpdateAPIView):  # Added
+class CourseUpdateAPIView(generics.UpdateAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_update(self, serializer):
-        serializer.save()  # Сохраняем изменения
-        course = self.get_object()  # Get the course object
-        send_course_update_email.delay(course.id)  # Вызов Celery task
+        serializer.save()
+        course = self.get_object()
+        send_course_update_email.delay(course.id)
