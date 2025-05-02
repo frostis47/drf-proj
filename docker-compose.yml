@@ -35,7 +35,7 @@ services:
     env_file:
       - ./.env
     environment:
-      SECRET_KEY: ${SECRET_KEY}  # Добавлено здесь
+      SECRET_KEY: ${SECRET_KEY}
 
   backend:
     build: .
@@ -49,7 +49,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
       REDIS_URL: redis://my-redis:6379
-      SECRET_KEY: ${SECRET_KEY}  # Добавлено здесь
+      SECRET_KEY: ${SECRET_KEY}
       DEBUG: ${DEBUG}
     volumes:
       - .:/app
