@@ -4,7 +4,10 @@ from django.conf import settings
 from .models import CourseSubscription, Course
 from django.utils import timezone
 from datetime import timedelta
+import logging
 
+# Настройка логирования
+logger = logging.getLogger(__name__)
 
 @shared_task
 def send_course_update_email(course_id):
@@ -22,22 +25,30 @@ def send_course_update_email(course_id):
         time_difference = timezone.now() - course.last_update
 
         if time_difference < timedelta(hours=4):
-            return f"Skipped sending update email for course {course_id}: Updated too recently"
+            logger.info(f"Skipped sending update email for course {course_id}: Updated too recently")
+            return "Skipped sending update email: Updated too recently"
 
         subscriptions = CourseSubscription.objects.filter(course_id=course_id)
         email_list = [sub.user.email for sub in subscriptions]
 
+        if not email_list:
+            logger.info(f"No subscribers found for course {course_id}.")
+            return "No subscribers to notify."
+
         send_mail(
-            subject=f'Обновление курса!',  # Тема письма
-            message=f'Курс с id {course_id} был обновлен. Проверьте новые материалы!',  # Сообщение письма
-            from_email=settings.DEFAULT_FROM_EMAIL,  # Email отправителя берется из настроек Django
-            recipient_list=email_list,  # Список email-адресатов
+            subject='Обновление курса!',
+            message=f'Курс с id {course_id} был обновлен. Проверьте новые материалы!',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=email_list,
             fail_silently=False,
         )
+        logger.info(f"Successfully sent update email to {len(email_list)} subscribers for course {course_id}")
         return f"Successfully sent update email to {len(email_list)} subscribers for course {course_id}"
 
-    except Course.DoesNotExist:  # Обрабатываем исключение, если курс с указанным ID не найден
-        return f"Course with id {course_id} not found"  # Возвращаем сообщение о том, что курс не найден
+    except Course.DoesNotExist:
+        logger.error(f"Course with id {course_id} not found")
+        return "Course not found"
 
-    except Exception as e:  # Обрабатываем все остальные исключения
-        return f"Failed to send update email for course {course_id}: {str(e)}"
+    except Exception as e:
+        logger.error(f"Failed to send update email for course {course_id}: {str(e)}")
+        return f"Failed to send update email: {str(e)}"
