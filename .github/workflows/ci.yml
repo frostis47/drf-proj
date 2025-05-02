@@ -63,30 +63,18 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Display Python version (test)
-        run: python --version
-
       - name: Install Poetry
         run: pip install poetry
 
-      - name: Display Poetry Version (test)
-        run: poetry --version
-
       - name: Configure Poetry
         run: |
-          poetry config virtualenvs.in-project true # Ensure virtualenv is created in project
-
-      - name: Clear Poetry Cache
-        run: rm -rf $(poetry config cache-dir) || true
-
-      - name: Remove poetry.lock (test)
-        run: rm -f poetry.lock || true
+          poetry config virtualenvs.in-project true
 
       - name: Install Dependencies (test)
         run: poetry install --no-interaction
 
       - name: Migrate
-        run: poetry run python manage.py migrate  # Add this step!
+        run: poetry run python manage.py migrate
 
       - name: Activate Poetry Environment (Crucial!)
         run: |
@@ -98,10 +86,6 @@ jobs:
 
       - name: List Installed Packages (test)
         run: poetry show
-
-      - name: Print INSTALLED_APPS  (Debugging)
-        run: |
-          poetry run python -c "import os; from django.conf import settings; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); import django; django.setup(); print(settings.INSTALLED_APPS)"
 
       - name: Run Tests
         run: poetry run python manage.py test
