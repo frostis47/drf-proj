@@ -85,6 +85,9 @@ jobs:
       - name: Install Dependencies (test)
         run: poetry install --no-interaction
 
+      - name: Migrate
+        run: poetry run python manage.py migrate  # Add this step!
+
       - name: Activate Poetry Environment (Crucial!)
         run: |
           echo "venv=$(pwd)/.venv" >> $GITHUB_ENV
@@ -95,6 +98,10 @@ jobs:
 
       - name: List Installed Packages (test)
         run: poetry show
+
+      - name: Print INSTALLED_APPS  (Debugging)
+        run: |
+          poetry run python -c "import os; from django.conf import settings; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); import django; django.setup(); print(settings.INSTALLED_APPS)"
 
       - name: Run Tests
         run: poetry run python manage.py test
