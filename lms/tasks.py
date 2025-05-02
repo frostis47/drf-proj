@@ -4,6 +4,8 @@ from django.conf import settings
 from .models import CourseSubscription, Course
 from django.utils import timezone
 from datetime import timedelta
+
+
 @shared_task
 def send_course_update_email(course_id):
     """

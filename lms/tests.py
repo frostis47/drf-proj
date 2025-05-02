@@ -4,8 +4,7 @@ from rest_framework.test import APITestCase
 from lms.models import Course, Lesson, Subscription
 from users.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.models import Group
-from django.contrib.auth import get_user_model  # Import get_user_model
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 

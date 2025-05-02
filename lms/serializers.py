@@ -37,10 +37,3 @@ class CourseSerializer(serializers.ModelSerializer):
         if user and user.is_authenticated:
             return Subscription.objects.filter(user=user, course=obj).exists()
         return False
-
-
-
-class CourseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = '__all__'
