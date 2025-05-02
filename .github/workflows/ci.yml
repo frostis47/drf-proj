@@ -3,8 +3,8 @@ name: Django CI
 on: [push, pull_request]
 
 env:
-  SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-  ANOTHER_VAR: value
+     SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+     ANOTHER_VAR: value
 
 jobs:
   lint:
@@ -16,58 +16,39 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
-      - name: Install Poetry
-        run: pip install poetry
-
-      - name: Configure Poetry
-        run: poetry config virtualenvs.in-project true # Ensure virtualenv is created in project
-
-      - name: Update Lock File
-        run: poetry lock
-
-      - name: Install Dependencies (lint)
-        run: poetry install --with dev --no-interaction
+      - name: Install flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
 
       - name: Run flake8
-        run: poetry run flake8 .
+        run: flake8 .
+
 
   test:
     needs: lint
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+    - name: Check out code
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.13"
 
-      - name: Install Poetry
-        run: pip install poetry
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry
+        poetry config virtualenvs.create false
+        poetry install --no-root
 
-      - name: Configure Poetry
-        run: poetry config virtualenvs.in-project true # Ensure virtualenv is created in project
-
-      - name: Update Lock File
-        run: poetry lock
-
-      - name: Install Dependencies (test)
-        run: poetry install --no-interaction
-
-      - name: Set DJANGO_SETTINGS_MODULE
-        run: echo "DJANGO_SETTINGS_MODULE=drf_proj.settings" >> $GITHUB_ENV # important to include drf_proj instead of config
-
-      - name: Activate Poetry Environment (Crucial!)
-        run: |
-          echo "venv=$(pwd)/.venv" >> $GITHUB_ENV
-          echo "PATH=$venv/bin:$PATH" >> $GITHUB_ENV
-
-      - name: Run Tests
-        run: poetry run python manage.py test
+    - name: Run tests
+      run: python manage.py test
 
   build:
     needs: test
