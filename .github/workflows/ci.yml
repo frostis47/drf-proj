@@ -74,7 +74,6 @@ jobs:
 
       - name: Configure Poetry
         run: |
-          poetry config virtualenvs.create false
           poetry config virtualenvs.in-project true # Ensure virtualenv is created in project
 
       - name: Clear Poetry Cache
