@@ -118,7 +118,7 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000',  # Replace with your frontend server address
+    'http://127.0.0.1:8000',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
