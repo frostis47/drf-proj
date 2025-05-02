@@ -34,6 +34,8 @@ services:
       - redis
     env_file:
       - ./.env
+    environment:
+      SECRET_KEY: ${SECRET_KEY}  # Добавлено здесь
 
   backend:
     build: .
@@ -47,7 +49,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
       REDIS_URL: redis://my-redis:6379
-      SECRET_KEY: ${SECRET_KEY}
+      SECRET_KEY: ${SECRET_KEY}  # Добавлено здесь
       DEBUG: ${DEBUG}
     volumes:
       - .:/app
@@ -64,6 +66,7 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings
       CELERY_BROKER_URL: redis://my-redis:6379/0
       CELERY_RESULT_BACKEND: redis://my-redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
     volumes:
       - .:/app
     restart: always
@@ -79,6 +82,7 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings
       CELERY_BROKER_URL: redis://my-redis:6379/0
       CELERY_RESULT_BACKEND: redis://my-redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
     volumes:
       - .:/app
     restart: always
