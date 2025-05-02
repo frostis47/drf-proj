@@ -9,6 +9,7 @@ import logging
 # Настройка логирования
 logger = logging.getLogger(__name__)
 
+
 @shared_task
 def send_course_update_email(course_id):
     """
