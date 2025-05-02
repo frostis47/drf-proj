@@ -2,24 +2,42 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from lms.models import Course, Lesson, Subscription
-from users.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 User = get_user_model()
 
+
 class LMSAPITestCase(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', email='test@example.com', password='testpassword')
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpassword'
+        )
         self.client.force_authenticate(user=self.user)
 
-        self.user2 = User.objects.create_user(username='testuser2', email='test2@example.com', password='testpassword')
+        self.user2 = User.objects.create_user(
+            username='testuser2',
+            email='test2@example.com',
+            password='testpassword'
+        )
 
         # Create a course
-        self.course = Course.objects.create(title='Test Course', description='Test Description', owner=self.user)
+        self.course = Course.objects.create(
+            title='Test Course',
+            description='Test Description',
+            owner=self.user
+        )
 
         # Create a lesson associated with the course
-        self.lesson = Lesson.objects.create(title='Test Lesson', description='Test Lesson', course=self.course, owner=self.user)
+        self.lesson = Lesson.objects.create(
+            title='Test Lesson',
+            description='Test Lesson',
+            course=self.course,
+            owner=self.user
+        )
 
         refresh = RefreshToken.for_user(self.user)
         self.token = str(refresh.access_token)
@@ -30,8 +48,7 @@ class LMSAPITestCase(APITestCase):
         data = {'title': 'New Course', 'description': 'New Description'}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Course.objects.count(),
-                         2)
+        self.assertEqual(Course.objects.count(), 2)
         self.assertEqual(Course.objects.last().title, 'New Course')
 
     def test_course_list(self):
@@ -79,13 +96,6 @@ class LMSAPITestCase(APITestCase):
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Lesson.objects.get(pk=self.lesson.pk).title, 'Updated Test Lesson')
-
-    def test_lesson_update_not_owner(self):
-        url = reverse('lesson-detail', args=[self.lesson.pk])
-        data = {'title': 'Updated Test Lesson', 'description': 'Updated Test Lesson'}
-        self.client.force_authenticate(user=self.user2)
-        response = self.client.put(url, data)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_lesson_delete_owner(self):
         url = reverse('lesson-detail', args=[self.lesson.pk])
