@@ -6,9 +6,7 @@ from users.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 
-
 User = get_user_model()
-
 
 class LMSAPITestCase(APITestCase):
     def setUp(self):
@@ -21,8 +19,7 @@ class LMSAPITestCase(APITestCase):
         self.course = Course.objects.create(title='Test Course', description='Test Description', owner=self.user)
 
         # Create a lesson associated with the course
-        self.lesson = Lesson.objects.create(title='Test Lesson', description='Test Lesson', course=self.course,
-                                            owner=self.user)
+        self.lesson = Lesson.objects.create(title='Test Lesson', description='Test Lesson', course=self.course, owner=self.user)
 
         refresh = RefreshToken.for_user(self.user)
         self.token = str(refresh.access_token)
