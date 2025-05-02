@@ -88,7 +88,8 @@ jobs:
 
       - name: Activate Poetry Environment (Crucial!)
         run: |
-          echo "::add-path::$(pwd)/.venv/bin"
+          echo "venv=$(pwd)/.venv" >> $GITHUB_ENV
+          echo "PATH=$venv/bin:$PATH" >> $GITHUB_ENV
 
       - name: Check Python (test)
         run: python --version
