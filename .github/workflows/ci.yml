@@ -75,7 +75,7 @@ jobs:
       - name: Configure Poetry
         run: |
           poetry config virtualenvs.create false
-          #poetry config cache-dir /tmp/poetry_cache # Explicit cache directory to avoid permission issues (Optional)
+          poetry config virtualenvs.in-project true # Ensure virtualenv is created in project
 
       - name: Clear Poetry Cache
         run: rm -rf $(poetry config cache-dir) || true
@@ -85,6 +85,10 @@ jobs:
 
       - name: Install Dependencies (test)
         run: poetry install --no-interaction
+
+      - name: Activate Poetry Environment (Crucial!)
+        run: |
+          echo "::add-path::$(pwd)/.venv/bin"
 
       - name: Check Python (test)
         run: python --version
