@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         """Создает и возвращает пользователя с электронной почтой и паролем."""
@@ -18,6 +19,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
 
         return self.create_user(email, password, **extra_fields)
+
 
 class User(AbstractUser):
     username = None
@@ -49,6 +51,7 @@ class User(AbstractUser):
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
+
 class Payments(models.Model):
     PAYMENT_METHOD = (
         ("cash", "наличные"),
@@ -69,7 +72,7 @@ class Payments(models.Model):
         null=True,
     )
     course_paid = models.ForeignKey(
-        'lms.Course',  # Используйте строку вместо импорта
+        'lms.Course',
         on_delete=models.CASCADE,
         related_name="payments_course",
         verbose_name="Оплаченный курс",
@@ -78,7 +81,7 @@ class Payments(models.Model):
         null=True,
     )
     lesson_paid = models.ForeignKey(
-        'lms.Lesson',  # Используйте строку вместо импорта
+        'lms.Lesson',
         on_delete=models.CASCADE,
         related_name="payments_lesson",
         verbose_name="Оплаченный урок",
