@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import CourseSubscription, Course
+from .models import Subscription, Course
 from django.utils import timezone
 from datetime import timedelta
 import logging
@@ -29,7 +29,7 @@ def send_course_update_email(course_id):
             logger.info(f"Skipped sending update email for course {course_id}: Updated too recently")
             return "Skipped sending update email: Updated too recently"
 
-        subscriptions = CourseSubscription.objects.filter(course_id=course_id)
+        subscriptions = Subscription.objects.filter(course_id=course_id)
         email_list = [sub.user.email for sub in subscriptions]
 
         if not email_list:

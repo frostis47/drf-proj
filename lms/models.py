@@ -61,7 +61,7 @@ class Lesson(models.Model):
         verbose_name_plural = 'Уроки'
 
 
-class CourseSubscription(models.Model):
+class Subscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
