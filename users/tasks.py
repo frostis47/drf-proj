@@ -13,9 +13,9 @@ def block_inactive_users():
     cutoff_date = timezone.now() - timedelta(days=30)
     inactive_users = User.objects.filter(last_login__lt=cutoff_date, is_active=True)
 
-    for user in inactive_users:  # Итерируем по списку неактивных пользователей
-        user.is_active = False  # Устанавливаем  is_active в False,блокируем пользователя
-        user.save()  # Сохраняем изменения в базе данных
-        print(f"User {user.email} blocked due to inactivity.")  # Выводим сообщение о блокировке пользователя
+    for user in inactive_users:
+        user.is_active = False
+        user.save()
+        print(f"User {user.email} blocked due to inactivity.")
 
     return f"Blocked {inactive_users.count()} inactive users."

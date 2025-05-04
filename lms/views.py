@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from lms.models import Course, Lesson, Subscription
 from lms.paginators import CustomPagination
 from lms.serializers import (CourseDigtalSerializer, CourseSerializer,
-                                   LessonSerializer, SubscriptionSerializer)
+                             LessonSerializer, SubscriptionSerializer)
 from lms.tasks import mail_update_course_info
 from users.permissions import IsModern, IsOwner
 

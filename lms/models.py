@@ -9,7 +9,7 @@ class Course(models.Model):
     )
     description = models.TextField(verbose_name="Описание", blank=True, null=True)
     owner = models.ForeignKey(
-        'users.User',  # Используйте строку вместо импорта
+        'users.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -48,7 +48,7 @@ class Lesson(models.Model):
         help_text="Введите URL-адрес видео для урока (необязательно).",
     )
     owner = models.ForeignKey(
-        'users.User',  # Используйте строку вместо импорта
+        'users.User',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -64,7 +64,7 @@ class Lesson(models.Model):
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        'users.User',  # Используйте строку вместо импорта
+        'users.User',
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
         related_name="subscription_user",
