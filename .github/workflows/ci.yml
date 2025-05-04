@@ -88,13 +88,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.SECRET_KEY }}" | docker login -u "${{ secrets.DB_USER }}" --password-stdin
 
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }} .
+        run: docker build -t ${{ secrets.DB_USER }}/online_work:${{ github.sha }} .
 
       - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }}
+        run: docker push ${{ secrets.DB_USER }}/online_work:${{ github.sha }}
 
   deploy:
     needs: build
@@ -112,8 +112,8 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }}
+          docker pull ${{ secrets.DB_USER }}/online_work:${{ github.sha }}
           docker stop online_work || true
           docker rm online_work || true
-          docker run -d --name online_work -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }}
+          docker run -d --name online_work -p 80:8000 ${{ secrets.DB_USER }}/online_work:${{ github.sha }}
           EOF
