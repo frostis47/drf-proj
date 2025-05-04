@@ -1,16 +1,28 @@
 from django.urls import path
-from .views import UserProfileUpdateView, PaymentListView, UserCreateView, UserListView, UserDetailView
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import (TokenObtainPairView,
+                                            TokenRefreshView)
+
+from users.apps import UsersConfig
+from users.views import PaymentsCreateAPIView, UserCreateAPIView
+
+app_name = UsersConfig.name
 
 urlpatterns = [
-    path('profile/<int:pk>/', UserProfileUpdateView.as_view(), name='user-profile-update'),
-    path('payments/', PaymentListView.as_view(), name='payment-list'),
-    path('register/', UserCreateView.as_view(), name='user-register'),
-    path('users/', UserListView.as_view(), name='user-list'),
-    path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path("register/", UserCreateAPIView.as_view(), name="register "),
+    path(
+        "login/",
+        TokenObtainPairView.as_view(permission_classes=(AllowAny,)),
+        name="login",
+    ),
+    path(
+        "token/refresh/",
+        TokenRefreshView.as_view(permission_classes=(AllowAny,)),
+        name="token_refresh",
+    ),
+    path(
+        "payments/",
+        PaymentsCreateAPIView.as_view(),
+        name="payments",
+    ),
 ]

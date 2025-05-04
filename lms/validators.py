@@ -1,7 +1,12 @@
+from rest_framework.serializers import ValidationError
 
-from django.core.exceptions import ValidationError
 
+class YoutubeValidators:
 
-def validate_youtube_link(value):
-    if value and "youtube.com" not in value:
-        raise ValidationError("Разрешены только ссылки на youtube.com")
+    def __init__(self, field):
+        self.field = field
+
+    def __call__(self, value):
+        video_url = value.get(self.field)
+        if video_url and not video_url.startswith("https://www.youtube.com/"):
+            raise ValidationError("Недопустимая ссылка")

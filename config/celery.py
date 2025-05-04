@@ -1,19 +1,17 @@
+from __future__ import absolute_import, unicode_literals
+
 import os
+
 from celery import Celery
-from dotenv import load_dotenv
 
-load_dotenv()
+# Установка переменной окружения для настроек проекта
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+# Создание экземпляра объекта Celery
+app = Celery("config")
 
-app = Celery('config')  # Создаем экземпляр Celery application с именем 'config'
-app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks()  # Автоматически обнаруживаем и регистрируем Celery tasks во всех установленных Django apps
+# Загрузка настроек из файла Django
+app.config_from_object("django.conf:settings", namespace="CELERY")
 
-
-@app.task(bind=True)  # Регистрируем функцию debug_task как Celery task
-def debug_task(self):
-    """
-    Celery task для отладки. Выводит информацию о запросе.
-    """
-    print(f'Request: {self.request!r}')  # Выводим информацию о запросе
+# Автоматическое обнаружение и регистрация задач из файлов tasks.py в приложениях Django
+app.autodiscover_tasks()

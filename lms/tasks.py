@@ -1,55 +1,39 @@
+from datetime import timedelta
+
 from celery import shared_task
 from django.core.mail import send_mail
-from django.conf import settings
-from .models import Subscription, Course
 from django.utils import timezone
-from datetime import timedelta
-import logging
 
-# Настройка логирования
-logger = logging.getLogger(__name__)
+from config.settings import EMAIL_HOST_USER
+from lms.models import Subscription
+from users.models import User
 
 
 @shared_task
-def send_course_update_email(course_id):
-    """
-    Асинхронно отправляет email подписчикам при обновлении курса.
-
-    Args:
-        course_id (int): ID обновленного курса.
-
-    Returns:
-        str: Сообщение об успехе или неудаче отправки email.
-    """
-    try:
-        course = Course.objects.get(pk=course_id)
-        time_difference = timezone.now() - course.last_update
-
-        if time_difference < timedelta(hours=4):
-            logger.info(f"Skipped sending update email for course {course_id}: Updated too recently")
-            return "Skipped sending update email: Updated too recently"
-
-        subscriptions = Subscription.objects.filter(course_id=course_id)
-        email_list = [sub.user.email for sub in subscriptions]
-
-        if not email_list:
-            logger.info(f"No subscribers found for course {course_id}.")
-            return "No subscribers to notify."
-
+def mail_update_course_info(course_id):
+    """Отправка сообщения об обновлении курса по подписке"""
+    subscription_course = Subscription.objects.filter(course=course_id)
+    print(f"Найдено {len(subscription_course)} подписок на курс {course_id}")
+    for subscription in subscription_course:
+        print(f"Отправка электронного письма на {subscription.user.email}")
         send_mail(
-            subject='Обновление курса!',
-            message=f'Курс с id {course_id} был обновлен. Проверьте новые материалы!',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=email_list,
+            subject="Обновление материалов курса",
+            message=f"Курс {subscription.course.title} был обновлен.",
+            from_email=EMAIL_HOST_USER,
+            recipient_list=[subscription.user.email],
             fail_silently=False,
         )
-        logger.info(f"Successfully sent update email to {len(email_list)} subscribers for course {course_id}")
-        return f"Successfully sent update email to {len(email_list)} subscribers for course {course_id}"
 
-    except Course.DoesNotExist:
-        logger.error(f"Course with id {course_id} not found")
-        return "Course not found"
 
-    except Exception as e:
-        logger.error(f"Failed to send update email for course {course_id}: {str(e)}")
-        return f"Failed to send update email: {str(e)}"
+@shared_task
+def check_last_login():
+    """Проверка последнего входа пользователей и отключение неактивных пользователей"""
+    users = User.objects.filter(last_login__isnull=False)
+    today = timezone.now()
+    for user in users:
+        if today - user.last_login > timedelta(days=30):
+            user.is_active = False
+            user.save()
+            print(f"Пользователь {user.email} отключен")
+        else:
+            print(f"Пользователь {user.email} активен")

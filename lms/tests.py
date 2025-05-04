@@ -1,110 +1,169 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from lms.models import Course, Lesson, Subscription
-from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
+
+from users.models import User
+
+from .models import Course, Lesson, Subscription
 
 
-User = get_user_model()
+class LessonTestCase(APITestCase):
 
-
-class LMSAPITestCase(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpassword'
+        self.user = User.objects.create(email="wert@mail.ru")
+        self.course = Course.objects.create(name="C++", description="Test")
+        self.lesson = Lesson.objects.create(
+            name="Django", course=self.course, owner=self.user
         )
         self.client.force_authenticate(user=self.user)
 
-        self.user2 = User.objects.create_user(
-            username='testuser2',
-            email='test2@example.com',
-            password='testpassword'
-        )
-
-        # Create a course
-        self.course = Course.objects.create(
-            title='Test Course',
-            description='Test Description',
-            owner=self.user
-        )
-
-        # Create a lesson associated with the course
-        self.lesson = Lesson.objects.create(
-            title='Test Lesson',
-            description='Test Lesson',
-            course=self.course,
-            owner=self.user
-        )
-
-        refresh = RefreshToken.for_user(self.user)
-        self.token = str(refresh.access_token)
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
-
-    def test_course_create(self):
-        url = reverse('course-list')
-        data = {'title': 'New Course', 'description': 'New Description'}
+    def test_create_lesson(self):
+        url = reverse("lms:lesson_create")
+        self.client.force_authenticate(user=self.user)
+        data = {
+            "name": "Test",
+            "description": "Test",
+            "course": self.course.pk,
+            "owner": self.user.pk,
+        }
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Course.objects.count(), 2)
-        self.assertEqual(Course.objects.last().title, 'New Course')
 
-    def test_course_list(self):
-        url = reverse('course-list')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_lesson_Youtube(self):
+        url = reverse("lms:lesson_create")
+        self.client.force_authenticate(user=self.user)
+        data = {
+            "name": "Test",
+            "description": "Test",
+            "course": self.course.pk,
+            "owner": self.user.pk,
+            "video_url": "https://www.youtube.com/",
+        }
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_lesson_no_Youtube(self):
+        url = reverse("lms:lesson_create")
+        self.client.force_authenticate(user=self.user)
+        data = {
+            "name": "Test",
+            "description": "Test",
+            "course": self.course.pk,
+            "owner": self.user.pk,
+            "video_url": "https://www.youtube.ru/",
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_lesson_YouTube(self):
+        url = reverse("lms:lesson_create")
+        self.client.force_authenticate(user=self.user)
+        data = {
+            "name": "Test",
+            "description": "Test",
+            "course": self.course.pk,
+            "owner": self.user.pk,
+            "video_url": "https://www.youtube.com/NmlslLSSM",
+        }
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Lesson.objects.count(), 2)
+
+    def test_create_lesson_YouTube_(self):
+        url = reverse("lms:lesson_create")
+        self.client.force_authenticate(user=self.user)
+        data = {
+            "name": "Test",
+            "description": "Test",
+            "course": self.course.pk,
+            "owner": self.user.pk,
+            "video_url": "https://www.vk.com/",
+        }
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_lesson_retrieve(self):
+        url = reverse("lms:lesson_retrieve", args=(self.lesson.pk,))
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Test Course')
 
-    def test_subscription_create(self):
-        url = reverse('subscription-create')
-        data = {'user': self.user.pk, 'course': self.course.pk}
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Subscription.objects.count(), 1)
-
-    def test_subscription_list(self):
-        # Create a subscription
-        Subscription.objects.create(user=self.user, course=self.course)
-        url = reverse('subscription-list')
-        response = self.client.get(url)
+    def test_lesson_update(self):
+        url = reverse("lms:lesson_update", args=(self.lesson.pk,))
+        data = {
+            "name": "Test1",
+            "description": "Test1",
+            "course": self.course.pk,
+            "owner": self.user.pk,
+        }
+        response = self.client.patch(url, data)
+        data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['user'], self.user.pk)
-        self.assertEqual(response.data[0]['course'], self.course.pk)
+        self.assertEqual(data.get("name"), "Test1")
 
-    def test_subscription_delete(self):
-        subscription = Subscription.objects.create(user=self.user, course=self.course)
-        url = reverse('subscription-delete', args=[subscription.pk])
+    def test_lesson_delete(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("lms:lesson_delete", args=(self.lesson.pk,))
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Subscription.objects.count(), 0)
 
     def test_lesson_list(self):
-        url = reverse('lesson-list')
+        url = reverse("lms:lesson_list")
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class SubscriptionTestCase(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create(email="wert@mail.ru")
+        self.course = Course.objects.create(name="C++", description="Test")
+        self.lesson = Lesson.objects.create(
+            name="Django", course=self.course, owner=self.user
+        )
+        self.subscription = Subscription.objects.create(
+            user=self.user, course=self.course
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_subscribe_to_course(self):
+        Subscription.objects.all().delete()
+        url = reverse("lms:subscription_create")
+        data = {"course_id": self.course.id}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Вы подписались")
+        self.assertTrue(
+            Subscription.objects.filter(user=self.user, course=self.course).exists()
+        )
+        url = reverse("lms:subscription_create")
+        data = {"course_id": self.course.id}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Вы отписались")
+
+    def test_subscription_list(self):
+        url = reverse("lms:subscription_list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Test Lesson')
+        self.assertEqual(response.data[0]["course"], self.course.id)
 
-    def test_lesson_update_by_owner(self):
-        url = reverse('lesson-detail', args=[self.lesson.pk])
-        data = {'title': 'Updated Test Lesson', 'description': 'Updated Test Lesson'}
-        self.client.force_authenticate(user=self.user)
-        response = self.client.put(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Lesson.objects.get(pk=self.lesson.pk).title, 'Updated Test Lesson')
+    def test_subscribe_to_course_no_ex(self):
+        Subscription.objects.all().delete()
+        url = reverse("lms:subscription_create")
+        data = {"course_id": ""}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_lesson_delete_owner(self):
-        url = reverse('lesson-detail', args=[self.lesson.pk])
-        self.client.force_authenticate(user=self.user)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_lesson_delete_not_owner(self):
-        url = reverse('lesson-detail', args=[self.lesson.pk])
-        self.client.force_authenticate(user=self.user2)
-        response = self.client.delete(url)
+    def test_subscribe_to_course_no_au(self):
+        Subscription.objects.all().delete()
+        self.client.force_authenticate(user="")
+        url = reverse("lms:subscription_create")
+        data = {"course_id": self.course.id}
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

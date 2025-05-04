@@ -1,26 +1,33 @@
-from django.urls import path, include
-from rest_framework import routers
-from .views import (
-    CourseViewSet,
-    LessonListAPIView,
-    LessonRetrieveAPIView,
-    LessonCreateAPIView,
-    LessonUpdateAPIView,
-    LessonDestroyAPIView,
-    CreatePaymentView,
-    CourseUpdateAPIView,
-)
+from django.urls import path
+from rest_framework.routers import SimpleRouter
 
-router = routers.DefaultRouter()
-router.register(r'courses', CourseViewSet, basename='courses')
+from lms.apps import LmsConfig
+from lms.views import (CourseViewSet, LessonCreateAPIView,
+                             LessonDestroyAPIView, LessonListAPIView,
+                             LessonRetrieveAPIView, LessonUpdateAPIView,
+                             SubscriptionAPIView, SubscriptionListAPIView)
+
+app_name = LmsConfig.name
+
+router = SimpleRouter()
+router.register("", CourseViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('lessons/', LessonListAPIView.as_view(), name='lesson-list'),
-    path('lessons/<int:pk>/', LessonRetrieveAPIView.as_view(), name='lesson-detail'),
-    path('lessons/create/', LessonCreateAPIView.as_view(), name='lesson-create'),
-    path('lessons/update/<int:pk>/', LessonUpdateAPIView.as_view(), name='lesson-update'),
-    path('lessons/delete/<int:pk>/', LessonDestroyAPIView.as_view(), name='lesson-delete'),
-    path('payments/create/', CreatePaymentView.as_view(), name='create-payment'),
-    path('courses/<int:pk>/update/', CourseUpdateAPIView.as_view(), name='course-update'),
+    path("lesson/", LessonListAPIView.as_view(), name="lesson_list"),
+    path("lesson/create/", LessonCreateAPIView.as_view(), name="lesson_create"),
+    path("lesson/<int:pk>/", LessonRetrieveAPIView.as_view(), name="lesson_retrieve"),
+    path(
+        "lesson/<int:pk>/update/", LessonUpdateAPIView.as_view(), name="lesson_update"
+    ),
+    path(
+        "lesson/<int:pk>/delete/", LessonDestroyAPIView.as_view(), name="lesson_delete"
+    ),
+    path(
+        "subscription/create/",
+        SubscriptionAPIView.as_view(),
+        name="subscription_create",
+    ),
+    path("subscription/", SubscriptionListAPIView.as_view(), name="subscription_list"),
 ]
+
+urlpatterns += router.urls
