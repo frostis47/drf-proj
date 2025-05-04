@@ -24,6 +24,7 @@ django_celery_beat = "^2.8.0"
 psycopg2-binary = "^2.9.10"
 stripe = "^12.1.0"
 redis = "^6.0.0"
+Pillow = "^10.0.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.2.0"
