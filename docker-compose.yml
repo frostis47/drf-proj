@@ -1,25 +1,17 @@
-version: '3.9'
-
 services:
-  db:
-    image: postgres:14
-    container_name: db
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5432:5432"
+  web:
+    build: .
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: always
-
-  redis:
-    image: redis:7.2.5
-    container_name: my-redis
+      - .:/app
+      - static_volume:/app/staticfiles
     ports:
-      - "6379:6379"
-    restart: always
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - ./.env
 
   nginx:
     build:
@@ -30,40 +22,36 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/app/staticfiles
     depends_on:
-      - web
+    - web
 
-  web:
-    build: .
-    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+  db:
+    image: postgres:16
     volumes:
-      - .:/app
-      - static_volume:/app/staticfiles
-    ports:
-      - "8080:8000"
-    depends_on:
-      - db
-      - redis
+      - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
-    environment:
-      SECRET_KEY: ${SECRET_KEY}
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+    env_file:
+       - ./.env
 
   celery:
     build: .
-    container_name: celery
-    command: celery -A config worker -l info  # Изменено на worker
-    depends_on:
-      - db
-      - redis
-    environment:
-      DJANGO_SETTINGS_MODULE: config.settings
-      CELERY_BROKER_URL: redis://my-redis:6379/0
-      CELERY_RESULT_BACKEND: redis://my-redis:6379/0
-      SECRET_KEY: ${SECRET_KEY}
+    command: >
+      bash -c "celery -A config worker --loglevel=info --pool=solo"
     volumes:
       - .:/app
-    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+      - db
+
 
 volumes:
   postgres_data:
   static_volume:
+  redis_data:
