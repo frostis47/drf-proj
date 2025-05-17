@@ -3,8 +3,14 @@ name: Django CI
 on: [push, pull_request]
 
 env:
-     SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-     ANOTHER_VAR: value
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}  # Используйте секретный ключ для Django
+  DB_NAME: ${{ secrets.DB_NAME }}         # Имя базы данных
+  DB_USER: ${{ secrets.DB_USER }}         # Пользователь базы данных
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # Пароль базы данных
+  DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}   # Директория для развертывания
+  SERVER_IP: ${{ secrets.SERVER_IP }}     # IP-адрес сервера
+  SSH_KEY: ${{ secrets.SSH_KEY }}         # SSH-ключ для доступа к серверу
+  SSH_USER: ${{ secrets.SSH_USER }}       # Пользователь SSH
 
 jobs:
   lint:
@@ -24,31 +30,30 @@ jobs:
           pip install flake8
 
       - name: Run flake8
-        run: flake8 .
-
+        run: flake8 .  # Запуск линтера для проверки кода
 
   test:
     needs: lint
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.13"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install poetry
-        poetry config virtualenvs.create false
-        poetry install --no-root
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false  # Установка зависимостей в глобальную среду
+          poetry install --no-root  # Установка зависимостей без установки самого проекта
 
-    - name: Run tests
-      run: python manage.py test
+      - name: Run tests
+        run: python manage.py test  # Запуск тестов Django
 
   build:
     needs: test
@@ -83,8 +88,18 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          # Pull the latest Docker image
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }}
+          
+          # Stop and remove the existing container if it exists
           docker stop online_work || true
           docker rm online_work || true
-          docker run -d --name online_work -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }}
+          
+          # Run the new container
+          docker run -d --name online_work -p 80:8000 \
+            -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
+            -e DB_NAME=${{ secrets.DB_NAME }} \
+            -e DB_USER=${{ secrets.DB_USER }} \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }}
           EOF
