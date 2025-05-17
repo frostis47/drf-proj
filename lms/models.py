@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+
 class Course(models.Model):
     name = models.CharField(
         max_length=50, verbose_name="Название курса", help_text="Укажите название курса"
@@ -45,6 +46,7 @@ class Course(models.Model):
         verbose_name = "Курс"
         verbose_name_plural = "Курсы"
         ordering = ["name"]
+
 
 class Lesson(models.Model):
     name = models.CharField(
@@ -100,6 +102,7 @@ class Lesson(models.Model):
         verbose_name = "Урок"
         verbose_name_plural = "Уроки"
         ordering = ["order"]
+
 
 class Subscription(models.Model):
     user = models.ForeignKey(
