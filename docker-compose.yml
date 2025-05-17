@@ -87,3 +87,4 @@ services:
 volumes:
   static_files:
   postgres_data:
+  .data.cache:

@@ -77,7 +77,18 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-
+#      - name: Deploy to server
+#        run: |
+#          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60" ./ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.DEPLOY_DIR }}
+#          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+#              cd /home/ekatesting/app
+#              docker-compose down
+#              docker rm -f $(docker ps -aq)
+#              docker stop atomichabits || true
+#              docker rm atomichabits || true
+#              docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/atomichabits:${{ github.sha }}
+#              docker run -d --name atomichabits -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/atomichabits:${{ github.sha }}
+#          EOF
       - name: Deploy to server
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60" ./ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.DEPLOY_DIR }}
