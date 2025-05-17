@@ -1,3 +1,8 @@
+version: '3.8'
+
+env:
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
 services:
   web:
     build: .
@@ -22,7 +27,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/app/staticfiles
     depends_on:
-    - web
+      - web
 
   db:
     image: postgres:16
@@ -36,7 +41,7 @@ services:
     volumes:
       - redis_data:/data
     env_file:
-       - ./.env
+      - ./.env
 
   celery:
     build: .
@@ -49,7 +54,6 @@ services:
     depends_on:
       - redis
       - db
-
 
 volumes:
   postgres_data:
