@@ -6,7 +6,7 @@ from datetime import timedelta
 from celery.schedules import crontab
 
 
-load_dotenv(override=True)
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

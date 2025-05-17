@@ -1,90 +1,63 @@
-services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    container_name: app
-    command: bash -c "python manage.py collectstatic --no-input && python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
-    ports:
-      - "8000:8000"
-    tty: true
-    volumes:
-      -  .:/app
-      - static_files:/app/static
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgres://${USER}:${PASSWORD}@db:5432/${NAME}
 
+services:
   db:
-    image: postgres:16
-#    container_name: postgres
+    image: postgres:14
+    container_name: db
     env_file:
       - .env
-    environment:
-      - POSTGRES_DB=${NAME}
-      - POSTGRES_USER=${USER}
-      - POSTGRES_PASSWORD=${PASSWORD}
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${USER}"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
+    restart: always
 
   redis:
-    image: redis
-    container_name: redis
-    command: bash -c "redis-server --save 20 1 --loglevel warning"
-    volumes:
-      - .data.cache:/data
+    image: redis:7.2.5
+    container_name: my-redis
     ports:
-      - "6380:6379"
+      - "6379:6379"
+    restart: always
 
-  celery:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: celery
-    env_file:
-      - .env
-    command: bash -c "celery -A config.celery_config worker -l INFO"
+  backend:
+    build: .
+    container_name: backend
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
     depends_on:
-      - redis
-
-  celery-beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: beat
-    env_file:
-      - .env
-    command: bash -c "celery -A config.celery_config beat -l INFO"
-    depends_on:
-      - app
       - db
       - redis
-
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    container_name: nginx
-    ports:
-      - "8080:8080"
+    env_file:
+      - .env
     volumes:
-      - static_files:/app/static
+      - .:/app
+    restart: always
+
+  celery:
+    build: .
+    container_name: celery
+    command: celery -A config worker -l info
     depends_on:
-      - app
+      - db
+      - redis
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: always
+
+  celerybeat:
+    build: .
+    container_name: celerybeat
+    command: celery -A config beat -l info
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: always
 
 volumes:
-  static_files:
   postgres_data:
-  .data.cache:

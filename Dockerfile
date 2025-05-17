@@ -1,25 +1,25 @@
-# Используем официальный slim-образ Python 3.12
-FROM python:3.12-slim
+FROM python:3.12
 
-# Устанавливаем рабочую директорию в контейнере
+# Установка рабочей директории
 WORKDIR /app
 
-# Устанавливаем зависимости системы
-RUN apt-get update \
-    && apt-get install -y gcc libpq-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Копирование файла зависимостей
+COPY requirements.txt .
 
-ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
-
-COPY requirements.txt ./
+# Установка зависимостей
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем исходный код приложения в контейнер
+# Копирование всего кода приложения
 COPY . .
 
-RUN mkdir -p /app/staticfiles && chmod -R 755 /app/staticfiles
+# Установка переменных окружения
+ENV SECRET_KEY=${SECRET_KEY}
+ENV CELERY_BROKER_URL=redis://${REDIS_HOST}:${REDIS_PORT}/${REDIS_DB}
+ENV CELERY_RESULT_BACKEND=redis://${REDIS_HOST}:${REDIS_PORT}/${REDIS_DB}
+ENV DJANGO_SETTINGS_MODULE=config.settings
 
+# Открытие порта для приложения
 EXPOSE 8000
 
+# Команда для запуска приложения
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
