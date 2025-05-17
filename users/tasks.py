@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 
-@shared_task  # Преобразуем функцию block_inactive_users в Celery task
+@shared_task
 def block_inactive_users():
     """
     Celery task для блокировки пользователей, не заходивших в систему более месяца.
