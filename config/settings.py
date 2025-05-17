@@ -137,7 +137,7 @@ STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
 CELERY_BEAT_SCHEDULE = {
     'block-inactive-users': {
         'task': 'users.tasks.block_inactive_users',
-        'schedule': crontab(hour=0, minute=1, day_of_month='1'),  # Запускать каждый месяц 1-го числа в 00:00
+        'schedule': crontab(hour=0, minute=1, day_of_month='1'),
     },
 }
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
