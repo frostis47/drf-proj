@@ -82,5 +82,5 @@ jobs:
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
           docker stop drf-proj || true
           docker rm -f drf-proj || true
-          docker run -d --name drf-proj -p 8080:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
+          docker run -d --name drf-proj -p 8080:8000 -e DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
           EOF
