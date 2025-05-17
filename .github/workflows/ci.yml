@@ -3,12 +3,8 @@ name: Django CI
 on: [push, pull_request]
 
 env:
-  SECRET_KEY: ${{ secrets.SECRET_KEY }}
-  DB_NAME: ${{ secrets.DB_NAME }}
-  DB_USER: ${{ secrets.DB_USER }}
-  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-  DB_HOST: postgres
-  DB_PORT: 5432
+     SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+     ANOTHER_VAR: value
 
 jobs:
   lint:
@@ -34,66 +30,60 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_DB: ${{ secrets.DB_NAME }}
-          POSTGRES_USER: ${{ secrets.DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U $POSTGRES_USER"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.13"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry
+        poetry config virtualenvs.create false
+        poetry install --no-root
+
+    - name: Run tests
+      run: python manage.py test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.13"
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
-      - name: Cache Poetry dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/pypoetry/virtualenvs
-            ~/.cache/pypoetry/artifacts
-          key: poetry-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }} .
 
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-          poetry config virtualenvs.create false
-          poetry install --no-root
-
-      - name: Run tests
-        run: python manage.py test
+      - name: Push Docker image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
 
   deploy:
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: Production
-      url: your-production-url.com
 
     steps:
       - name: Check out code
-        uses: appleboy/ssh-action@v1.0.0
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            set -e # Exit immediately if a command exits with a non-zero status.
-            cd dev/atomichabits_deploy
-            git pull
-            docker compose down
-            docker compose up -d --build
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }}
+          docker stop drf-prof || true
+          docker rm -f drf-proj || true
+          docker run -d --name drf-proj -p 8080:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
+          EOF
