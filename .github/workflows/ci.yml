@@ -3,8 +3,8 @@ name: Django CI
 on: [push, pull_request]
 
 env:
-     SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-     ANOTHER_VAR: value
+  SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+  ANOTHER_VAR: value
 
 jobs:
   lint:
@@ -29,30 +29,28 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
-
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.13"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install poetry
-        poetry config virtualenvs.create false
-        poetry install --no-root
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-root
 
-    - name: Run tests
-      run: python manage.py test
+      - name: Run tests
+        run: python manage.py test
 
   build:
     needs: test
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -69,7 +67,6 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -82,8 +79,8 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/online_work:${{ github.sha }}
-          docker stop drf-prof || true
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
+          docker stop drf-proj || true
           docker rm -f drf-proj || true
           docker run -d --name drf-proj -p 8080:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
           EOF
