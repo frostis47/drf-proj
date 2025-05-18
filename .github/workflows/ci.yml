@@ -22,11 +22,13 @@ jobs:
       - name: Run flake8
         run: flake8 .
 
+
   test:
     needs: lint
     runs-on: ubuntu-latest
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
 
     steps:
       - name: Check out code
@@ -82,8 +84,8 @@ jobs:
               echo "Removing existing container..."
               sudo docker rm drf-proj-new || true                            
               echo "Pulling new image..."
-              sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }} || { echo "Failed to pull image"; exit 1; }
+              sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
               echo "Running new container..."
-              sudo docker run -d --name drf-proj-new -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }} || { echo "Failed to run container"; exit 1; }
+              sudo docker run -d --name drf-proj-new -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
           EOF
           echo "Deployment completed successfully."
