@@ -10,7 +10,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-ur0!yc*j2(oxvdfh+&&c&wd+s2)ie=yx08nu2tvmr@7ggchkjv"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 if not SECRET_KEY:
     raise ValueError("The SECRET_KEY setting must not be empty.")
