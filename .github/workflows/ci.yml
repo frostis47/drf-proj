@@ -78,12 +78,12 @@ jobs:
           echo "Deploying to server..."
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'               
               echo "Stopping existing container..."
-              sudo docker stop drf-proj-db-1 || true
+              sudo docker stop drf-proj-new || true
               echo "Removing existing container..."
-              sudo docker rm drf-proj-db-1 || true                            
+              sudo docker rm drf-proj-new || true                            
               echo "Pulling new image..."
               sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }} || { echo "Failed to pull image"; exit 1; }
               echo "Running new container..."
-              sudo docker run -d --name drf-proj-db-1 -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }} || { echo "Failed to run container"; exit 1; }
+              sudo docker run -d --name drf-proj-new -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }} || { echo "Failed to run container"; exit 1; }
           EOF
           echo "Deployment completed successfully."
