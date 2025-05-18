@@ -76,7 +76,7 @@ jobs:
 
       - name: Deploy to server
         run: |
-          set -e  # Остановить выполнение при ошибке
+          set -e  
           echo "Deploying to server..."
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'               
               echo "Stopping existing container..."
@@ -86,6 +86,6 @@ jobs:
               echo "Pulling new image..."
               sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
               echo "Running new container..."
-              sudo docker run -d --name drf-proj -p 90:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
+              sudo docker run -d --name drf-proj -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
           EOF
           echo "Deployment completed successfully."
