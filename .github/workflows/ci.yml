@@ -76,16 +76,9 @@ jobs:
 
       - name: Deploy to server
         run: |
-          set -e  
-          echo "Deploying to server..."
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'               
-              echo "Stopping existing container..."
-              sudo docker stop drf-proj-new || true
-              echo "Removing existing container..."
-              sudo docker rm drf-proj-new || true                            
-              echo "Pulling new image..."
+              sudo docker stop drf-proj|| true
+              sudo docker rm drf-proj || true                            
               sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
-              echo "Running new container..."
-              sudo docker run -d --name drf-proj-new -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
+              sudo docker run -d --name drf-proj -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/drf-proj:${{ github.sha }}
           EOF
-          echo "Deployment completed successfully."
