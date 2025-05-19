@@ -1,49 +1,38 @@
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
-from .models import User, Payment
-from .serializers import PaymentSerializer, UserSerializer, UserUpdateSerializer, UserPublicSerializer
-from rest_framework import filters as drf_filters
-from django_filters.rest_framework import DjangoFilterBackend
-from .filters import PaymentFilter
-from .permissions import IsProfileOwner
+from rest_framework.filters import OrderingFilter
+from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import AllowAny
+
+from users.models import Payments, User
+from users.serializers import PaymentsSerializer, UserSerializer
+from users.service import (create_stripe_price, create_stripe_product,
+                           create_stripe_session)
 
 
-class PaymentListView(generics.ListAPIView):
-    queryset = Payment.objects.all()
-    serializer_class = PaymentSerializer
-    filter_backends = [DjangoFilterBackend, drf_filters.OrderingFilter]
-    filterset_class = PaymentFilter
-    ordering_fields = ['payment_date']
+class PaymentsCreateAPIView(CreateAPIView):
+    queryset = Payments.objects.all()
+    serializer_class = PaymentsSerializer
+    filter_backends = [OrderingFilter]
+    filterset_fields = ("payment_method",)
+    ordering_fields = [
+        "payment_date",
+    ]
+
+    def perform_create(self, serializer):
+        payment = serializer.save(user=self.request.user)
+        product_id = create_stripe_product()
+        price = create_stripe_price(payment.payment_amount, product_id)
+        session_id, payment_link = create_stripe_session(price)
+        payment.session_id = session_id
+        payment.link = payment_link
+        payment.save()
 
 
-class UserCreateView(generics.CreateAPIView):
-    queryset = User.objects.all()
+class UserCreateAPIView(CreateAPIView):
     serializer_class = UserSerializer
+    qureset = User.objects.all()
+    permission_classes = (AllowAny,)
 
-
-class UserProfileUpdateView(generics.UpdateAPIView):
-    serializer_class = UserUpdateSerializer
-    permission_classes = [IsAuthenticated, IsProfileOwner]
-
-    def get_object(self):
-        return self.request.user
-
-class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class UserDetailView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-
-    def get_serializer_class(self):
-        if self.request.user == self.get_object():
-            return UserSerializer
-        return UserPublicSerializer
-
-    permission_classes = [IsAuthenticated]
-
-
-
-
+    def perform_create(self, serializer):
+        user = serializer.save(is_active=True)
+        user.set_password(user.password)
+        user.save()

@@ -1,46 +1,46 @@
-from rest_framework import serializers
-from .models import Course, Lesson
-from .validators import validate_youtube_link
-from users.models import Subscription
+from rest_framework.fields import SerializerMethodField
+from rest_framework.serializers import ModelSerializer
+
+from lms.models import Course, Lesson, Subscription
+from lms.validators import YoutubeValidators
 
 
-class LessonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lesson
-        fields = '__all__'
-        read_only_fields = ('owner',)
-        validators = [
-            serializers.UniqueTogetherValidator(
-                queryset=Lesson.objects.all(),
-                fields=['title', 'course']
-            )
-        ]
+class CourseSerializer(ModelSerializer):
+    lessons = SerializerMethodField()
 
-    video_link = serializers.URLField(validators=[validate_youtube_link])
-
-
-class CourseSerializer(serializers.ModelSerializer):
-    lessons_count = serializers.SerializerMethodField()
-    lessons = LessonSerializer(many=True, read_only=True)
-    is_subscribed = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Course
-        fields = '__all__'
-        read_only_fields = ('owner',)
-
-    def get_lessons_count(self, obj):
-        return obj.lessons.count()
+    def get_lessons(self, course):
+        return [lesson.name for lesson in Lesson.objects.filter(course=course)]
 
     def get_is_subscribed(self, obj):
-        user = self.context.get('request').user if self.context.get('request') else None
-        if user and user.is_authenticated:
+        user = self.context["request"].user
+        if user.is_authenticated:
             return Subscription.objects.filter(user=user, course=obj).exists()
         return False
 
-
-
-class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = '__all__'
+        fields = "__all__"
+
+
+class CourseDigtalSerializer(ModelSerializer):
+    lesson_count = SerializerMethodField()
+
+    def get_lesson_count(self, course):
+        return Lesson.objects.filter(course=course).count()
+
+    class Meta:
+        model = Course
+        fields = ("name", "description", "lesson_count")
+
+
+class LessonSerializer(ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = "__all__"
+        validators = [YoutubeValidators(field="video_url")]
+
+
+class SubscriptionSerializer(ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = "__all__"

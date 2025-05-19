@@ -1,99 +1,110 @@
-from rest_framework import generics, viewsets, status
+from rest_framework.generics import (CreateAPIView, DestroyAPIView,
+                                     ListAPIView, RetrieveAPIView,
+                                     UpdateAPIView, get_object_or_404)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.conf import settings
-from django.utils import timezone
-from .models import Course, Lesson
-from .serializers import CourseSerializer, LessonSerializer
-from users.models import Payment
-from .services import create_stripe_product, create_stripe_price, create_stripe_session
-from .tasks import send_course_update_email
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
+
+from lms.models import Course, Lesson, Subscription
+from lms.paginators import CustomPagination
+from lms.serializers import (CourseDigtalSerializer, CourseSerializer,
+                             LessonSerializer, SubscriptionSerializer)
+from lms.tasks import mail_update_course_info
+from users.permissions import IsModern, IsOwner
 
 
-class CourseViewSet(viewsets.ModelViewSet):
+class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
-    serializer_class = CourseSerializer
+    filterset_fields = ("lesson",)
+    pagination_class = CustomPagination
 
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return CourseDigtalSerializer
+        return CourseSerializer
 
-class LessonListAPIView(generics.ListAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
+    def get_permissions(self):
+        if self.action == "create":
+            self.permission_classes = (~IsModern,)
+        elif self.action in ["update", "retrieve"]:
+            self.permission_classes = IsModern | IsOwner
+        elif self.action == "destroy":
+            self.permission_classes = ~IsModern | IsOwner
+        return super().get_permissions()
 
-
-class LessonRetrieveAPIView(generics.RetrieveAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-
-
-class LessonCreateAPIView(generics.CreateAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-
-
-class LessonUpdateAPIView(generics.UpdateAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-
-
-class LessonDestroyAPIView(generics.DestroyAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-
-
-class CreatePaymentView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def create(self, request, *args, **kwargs):
-        course_id = request.data.get('course')
-
-        try:
-            course = Course.objects.get(pk=course_id)
-            amount = course.price
-            payment_method = request.data.get('payment_method', 'stripe')
-
-            # Создание или получение Stripe Product ID
-            if not course.stripe_product_id:
-                course.stripe_product_id = create_stripe_product(name=course.title)
-                course.save()
-
-            # Создание или получение Stripe Price ID
-            if not course.stripe_price_id or course.price != course.stripe_price:
-                course.stripe_price_id = create_stripe_price(product_id=course.stripe_product_id, amount=amount)
-                course.stripe_price = amount
-                course.save()
-
-            success_url = settings.DOMAIN + '/success?session_id={CHECKOUT_SESSION_ID}'
-            cancel_url = settings.DOMAIN + '/cancel'
-            stripe_session_id, stripe_url = create_stripe_session(
-                price_id=course.stripe_price_id,
-                success_url=success_url,
-                cancel_url=cancel_url
-            )
-
-            Payment.objects.create(
-                user=request.user,
-                payment_date=timezone.now(),
-                course=course,
-                amount=amount,
-                payment_method=payment_method,
-                stripe_product_id=course.stripe_product_id,
-                stripe_price_id=course.stripe_price_id,
-                stripe_session_id=stripe_session_id,
-            )
-
-            return Response({'stripe_url': stripe_url}, status=status.HTTP_200_OK)
-
-        except Course.DoesNotExist:
-            return Response({'error': 'Course not found'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class CourseUpdateAPIView(generics.UpdateAPIView): # Added
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated]
+    def perform_create(self, serializer):
+        course = serializer.save()
+        course.owner = self.request.user
+        course.save()
 
     def perform_update(self, serializer):
-        serializer.save() # Сохраняем изменения
-        course = self.get_object() # Get the course object
-        send_course_update_email.delay(course.id) # Вызов Celery task
+        updated_course = serializer.save()
+        mail_update_course_info.delay(updated_course)
+        updated_course.save()
+
+
+class LessonListAPIView(ListAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    filterset_fields = ("course",)
+    pagination_class = CustomPagination
+
+
+class LessonCreateAPIView(CreateAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (~IsModern, IsAuthenticated)
+
+    def perform_create(self, serializer):
+        lesson = serializer.save()
+        lesson.owner = self.request.user
+        lesson.save()
+
+
+class LessonRetrieveAPIView(RetrieveAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (
+        IsAuthenticated,
+        IsModern | IsOwner,
+    )
+
+
+class LessonDestroyAPIView(DestroyAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (IsOwner | ~IsModern, IsAuthenticated)
+
+
+class LessonUpdateAPIView(UpdateAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = (
+        IsAuthenticated,
+        IsModern | IsOwner,
+    )
+
+
+class SubscriptionAPIView(APIView):
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get("course_id")
+        course_item = get_object_or_404(Course, id=course_id)
+        subs_item = Subscription.objects.filter(user=user, course=course_item)
+        if subs_item.exists():
+            subs_item.delete()
+            message = "Вы отписались"
+        else:
+            Subscription.objects.create(user=user, course=course_item)
+            message = "Вы подписались"
+        return Response({"message": message})
+
+
+class SubscriptionListAPIView(ListAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()

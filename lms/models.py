@@ -1,49 +1,86 @@
 from django.db import models
-from django.conf import settings
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
 
 
 class Course(models.Model):
-    title = models.CharField(max_length=255, verbose_name='Название')
-    preview = models.ImageField(upload_to='course_previews/', blank=True, null=True, verbose_name='Превью')
-    description = models.TextField(blank=True, null=True, verbose_name='Описание')
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='courses', verbose_name='Владелец', null=True, blank=True) # Изменено
-    stripe_product_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='Stripe Product ID')
-    stripe_price_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='Stripe Price ID')
-    stripe_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name='Stripe Price', help_text='Цена в Stripe (для проверки изменений)')
-
-    def __str__(self):
-        return self.title
+    name = models.CharField(
+        max_length=50, verbose_name="Название курса", help_text="Укажите название курса"
+    )
+    image = models.ImageField(
+        upload_to="media/images", blank=True, null=True, verbose_name="Превью"
+    )
+    description = models.TextField(verbose_name="Описание", blank=True, null=True)
+    owner = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Владелец",
+        help_text="Укажите владельца курса",
+    )
+    price = models.IntegerField(verbose_name="Цена", blank=True, null=True)
 
     class Meta:
-        verbose_name = 'Курс'
-        verbose_name_plural = 'Курсы'
-
-    def get_lesson_count(self):
-        return self.lessons.count()
+        verbose_name = "Курс"
+        verbose_name_plural = "Курсы"
 
 
 class Lesson(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons', verbose_name='Курс')
-    title = models.CharField(max_length=255, verbose_name='Название')
-    description = models.TextField(blank=True, null=True, verbose_name='Описание')
-    preview = models.ImageField(upload_to='lesson_previews/', blank=True, null=True, verbose_name='Превью')
-    video_link = models.URLField(blank=True, null=True, verbose_name='Ссылка на видео')
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lessons', verbose_name='Владелец', null=True, blank=True)
+    name = models.CharField(
+        max_length=50, verbose_name="Название урока", help_text="Укажите название урока"
+    )
+    image = models.ImageField(
+        upload_to="media/images", blank=True, null=True, verbose_name="Превью"
+    )
+    description = models.TextField(verbose_name="Описание", blank=True, null=True)
 
-    def __str__(self):
-        return self.title
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        verbose_name="Курс",
+        help_text="Укажите курс",
+    )
+
+    video_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="Ссылка на видео",
+        help_text="Введите URL-адрес видео для урока (необязательно).",
+    )
+    owner = models.ForeignKey(
+        'users.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Владелец",
+        help_text="Укажите владельца урока",
+    )
+    price = models.IntegerField(verbose_name="Цена", blank=True, null=True)
 
     class Meta:
-        verbose_name = 'Урок'
-        verbose_name_plural = 'Уроки'
+        verbose_name = "Урок"
+        verbose_name_plural = "Уроки"
 
 
-class CourseSubscription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь",
+        related_name="subscription_user",
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        verbose_name="Курс",
+        related_name="subscription_course",
+    )
+    is_subscribe = models.BooleanField(default=False, verbose_name="подписка")
 
     def __str__(self):
-        return f"{self.user.email} - {self.course.title}"
+        return f"{self.user} - {self.course}"
+
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
